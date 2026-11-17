@@ -26,12 +26,16 @@ def vulnerable_assistant() -> str:
 
 def safer_assistant() -> str:
     call = json.loads(MODEL_TOOL_CALL)
-    # This read-only FAQ assistant is never given email or private-order tools.
-    tools = {"lookup_public_return_policy": lambda args: "Returns accepted within 30 days."}
+    # Retrieved text can influence the model, so it is data, not authorization.
+    # Keep this assistant's capability set read-only and task-specific.
+    tools = {"lookup_public_return_policy": lambda: "Returns accepted within 30 days."}
     name = call.get("name")
     if name not in tools:
         return f"Blocked: tool '{name}' is not available to this assistant"
-    return tools[name](call.get("arguments", {}))
+    arguments = call.get("arguments", {})
+    if not isinstance(arguments, dict) or arguments:
+        return "Blocked: this lookup accepts no arguments"
+    return tools[name]()
 
 
 if __name__ == "__main__":

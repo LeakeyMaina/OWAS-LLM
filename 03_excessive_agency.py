@@ -24,7 +24,9 @@ def vulnerable(db: sqlite3.Connection) -> str:
 
 def safer(db: sqlite3.Connection) -> str:
     call = json.loads(MODEL_REQUEST)
-    # This assistant may check status only. Deletion requires a separate verified flow.
+    # Model output is an untrusted proposal, not proof of user intent or consent.
+    # This assistant may check status only. A destructive action needs a separate,
+    # authenticated flow with explicit user confirmation and sink-side authorization.
     if call.get("name") != "get_account_status":
         return "Blocked: account changes are outside this assistant's permissions"
     customer_id = call.get("arguments", {}).get("customer_id")
